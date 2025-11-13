@@ -7,3 +7,5 @@
 
 *.txt text
 *.md  text
+
+/gradlew        text eol=lf
