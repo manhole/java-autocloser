@@ -3,6 +3,8 @@
 
 [versions]
 junit-jupiter = "5.12.1"
+hamcrest = "2.2"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
