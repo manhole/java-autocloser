@@ -23,7 +23,8 @@ public class AutoCloser implements AutoCloseable {
     /**
      * Registers a resource to be closed.
      * <p>
-     * <strong>Note:</strong> This method must not be called after {@link #close()} has been called.
+     * <p>
+     * <strong>Note:</strong> This method throws an {@link IllegalStateException} if called after {@link #close()} has been called.
      *
      * @param resource the resource to manage, must not be null
      * @param <T>      the type of the resource
@@ -40,6 +41,14 @@ public class AutoCloser implements AutoCloseable {
         return resource;
     }
 
+    /**
+     * Closes all registered resources in LIFO (Last-In-First-Out) order.
+     * <p>
+     * This method is idempotent; calling it multiple times has no side effects after the first call.
+     * <p>
+     * If any resource throws an exception during closing, the first exception is thrown after all resources have been attempted to close.
+     * Subsequent exceptions are added as suppressed exceptions to the first one.
+     */
     @Override
     public void close() throws Exception {
         final Deque<AutoCloseable> toClose;
@@ -56,15 +65,13 @@ public class AutoCloser implements AutoCloseable {
 
         while (!toClose.isEmpty()) {
             final AutoCloseable resource = toClose.poll();
-            if (resource != null) {
-                try {
-                    resource.close();
-                } catch (final Exception e) {
-                    if (firstException == null) {
-                        firstException = e;
-                    } else {
-                        firstException.addSuppressed(e);
-                    }
+            try {
+                resource.close();
+            } catch (final Exception e) {
+                if (firstException == null) {
+                    firstException = e;
+                } else {
+                    firstException.addSuppressed(e);
                 }
             }
         }
