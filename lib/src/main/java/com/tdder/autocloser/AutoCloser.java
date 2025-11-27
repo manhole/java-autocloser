@@ -1,9 +1,8 @@
 package com.tdder.autocloser;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A utility class that ensures multiple {@link AutoCloseable} resources are closed reliably.
@@ -18,8 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class AutoCloser implements AutoCloseable {
 
-    private final Deque<AutoCloseable> resources = new ConcurrentLinkedDeque<>();
-    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final Deque<AutoCloseable> resources = new ArrayDeque<>();
+    private boolean closed = false;
 
     /**
      * Registers a resource to be closed.
@@ -32,9 +31,9 @@ public class AutoCloser implements AutoCloseable {
      * @throws NullPointerException  if the resource is null
      * @throws IllegalStateException if this AutoCloser has already been closed
      */
-    public <T extends AutoCloseable> T register(final T resource) {
+    public synchronized <T extends AutoCloseable> T register(final T resource) {
         Objects.requireNonNull(resource, "resource must not be null");
-        if (closed.get()) {
+        if (closed) {
             throw new IllegalStateException("AutoCloser is already closed");
         }
         resources.push(resource);
@@ -43,16 +42,20 @@ public class AutoCloser implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        // This method is expected to be called from a single thread (e.g., try-with-resources or test framework).
-        // However, we use compareAndSet to ensure idempotency and safety just in case.
-        if (!closed.compareAndSet(false, true)) {
-            return;
+        final Deque<AutoCloseable> toClose;
+        synchronized (this) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            toClose = new ArrayDeque<>(resources);
+            resources.clear();
         }
 
         Exception firstException = null;
 
-        while (!resources.isEmpty()) {
-            final AutoCloseable resource = resources.poll(); // Use poll() to be safe
+        while (!toClose.isEmpty()) {
+            final AutoCloseable resource = toClose.poll();
             if (resource != null) {
                 try {
                     resource.close();
