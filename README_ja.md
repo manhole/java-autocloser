@@ -2,7 +2,7 @@
 
 [AutoCloser](lib/src/main/java/com/tdder/autocloser/AutoCloser.java) は、複数の `AutoCloseable` を登録しておき、スコープ終了時に逆順で確実にクローズするクラスです。
 
-特に JUnit 5.11+ の `@AutoClose` と組み合わせると、テストでのクリーンアップを try-with-resources より簡潔に記述できますが、通常コードでも `try (AutoCloser closer = …)` という形でそのまま利用できます。
+特に JUnit 5.11+ の `@AutoClose` と組み合わせると、テストでのクリーンアップを try-with-resources より簡潔に記述できます。また、通常コードでも `try (AutoCloser closer = …)` という形でそのまま利用できます。
 
 [English README](README.md)
 
