@@ -113,6 +113,31 @@ class MyTest {
 }
 ```
 
+実行可能な例は `lib/src/test/java/com/tdder/autocloser/AutoCloserPerMethodExampleTest.java` を参照してください。
+
+### @TestInstance(PER_CLASS) の場合
+
+```java
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class MyTest {
+    private final AutoCloser closer = new AutoCloser();
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closer.close();
+    }
+
+    @Test
+    void test() {
+        closer.register(() -> cleanup1());
+        closer.register(() -> cleanup2());
+        // テスト後にクローズされます
+    }
+}
+```
+
+実行可能な例は `lib/src/test/java/com/tdder/autocloser/AutoCloserPerClassExampleTest.java` を参照してください。
+
 ## 要件
 
 - Java 17 以上

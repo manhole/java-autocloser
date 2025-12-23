@@ -113,6 +113,31 @@ class MyTest {
 }
 ```
 
+See `lib/src/test/java/com/tdder/autocloser/AutoCloserPerMethodExampleTest.java` for a runnable example.
+
+### With @TestInstance(PER_CLASS)
+
+```java
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class MyTest {
+    private final AutoCloser closer = new AutoCloser();
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closer.close();
+    }
+
+    @Test
+    void test() {
+        closer.register(() -> cleanup1());
+        closer.register(() -> cleanup2());
+        // Automatically closed after test
+    }
+}
+```
+
+See `lib/src/test/java/com/tdder/autocloser/AutoCloserPerClassExampleTest.java` for a runnable example.
+
 ## Requirements
 
 - Java 17 or higher

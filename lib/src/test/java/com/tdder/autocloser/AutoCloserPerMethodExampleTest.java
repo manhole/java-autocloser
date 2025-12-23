@@ -4,10 +4,13 @@ import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 
 /**
- * Sample test demonstrating AutoCloser usage with JUnit's @AutoClose annotation.
- * This matches the use case shown in the README.
+ * Sample test demonstrating AutoCloser usage with the default @TestInstance(Lifecycle.PER_METHOD) lifecycle.
+ * <p>
+ * Because each test method gets its own instance, {@code @AutoClose} effectively runs at
+ * {@link org.junit.jupiter.api.AfterEach} timing.
+ * This pairs with {@link AutoCloserPerClassExampleTest} to show the PER_CLASS variant.
  */
-class AutoCloserExampleTest {
+class AutoCloserPerMethodExampleTest {
 
     @AutoClose  // JUnit 5.11+ feature
     private final AutoCloser closer = new AutoCloser();
