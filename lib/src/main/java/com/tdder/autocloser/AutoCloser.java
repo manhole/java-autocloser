@@ -18,25 +18,18 @@ import java.util.Objects;
 public class AutoCloser implements AutoCloseable {
 
     private final Deque<AutoCloseable> resources = new ArrayDeque<>();
-    private boolean closed = false;
 
     /**
      * Registers a resource to be closed.
      * <p>
      * <p>
-     * <strong>Note:</strong> This method throws an {@link IllegalStateException} if called after {@link #close()} has been called.
-     *
      * @param resource the resource to manage, must not be null
      * @param <T>      the type of the resource
      * @return the registered resource
      * @throws NullPointerException  if the resource is null
-     * @throws IllegalStateException if this AutoCloser has already been closed
      */
     public synchronized <T extends AutoCloseable> T register(final T resource) {
         Objects.requireNonNull(resource, "resource must not be null");
-        if (closed) {
-            throw new IllegalStateException("AutoCloser is already closed");
-        }
         resources.push(resource);
         return resource;
     }
@@ -44,7 +37,7 @@ public class AutoCloser implements AutoCloseable {
     /**
      * Closes all registered resources in LIFO (Last-In-First-Out) order.
      * <p>
-     * This method is idempotent; calling it multiple times has no side effects after the first call.
+     * This method can be called multiple times; each call closes the resources registered since the previous call.
      * <p>
      * If any resource throws an exception during closing, the first exception is thrown after all resources have been attempted to close.
      * Subsequent exceptions are added as suppressed exceptions to the first one.
@@ -53,10 +46,6 @@ public class AutoCloser implements AutoCloseable {
     public void close() throws Exception {
         final Deque<AutoCloseable> toClose;
         synchronized (this) {
-            if (closed) {
-                return;
-            }
-            closed = true;
             toClose = new ArrayDeque<>(resources);
             resources.clear();
         }

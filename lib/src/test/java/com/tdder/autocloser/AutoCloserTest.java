@@ -101,27 +101,18 @@ class AutoCloserTest {
     }
 
     @Test
-    void throwsExceptionWhenRegisteringAfterClose() throws Exception {
-        final AutoCloser closer = new AutoCloser();
-        closer.close();
-
-        assertThrows(IllegalStateException.class, () -> {
-            closer.register(() -> {
-            });
-        });
-    }
-
-    @Test
-    void closeIsIdempotent() throws Exception {
+    void allowsReuseAfterClose() throws Exception {
         final List<String> closed = new ArrayList<>();
         final AutoCloser closer = new AutoCloser();
-        closer.register(() -> closed.add("resource"));
+        closer.register(() -> closed.add("1"));
+        closer.register(() -> closed.add("2"));
 
         closer.close();
-        assertThat(closed, hasSize(1));
+        assertThat(closed, contains("2", "1"));
 
-        // Second close should do nothing
+        closer.register(() -> closed.add("3"));
+        closer.register(() -> closed.add("4"));
         closer.close();
-        assertThat(closed, hasSize(1));
+        assertThat(closed, contains("2", "1", "4", "3"));
     }
 }

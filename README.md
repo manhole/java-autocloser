@@ -1,6 +1,7 @@
 # AutoCloser
 
 [AutoCloser](lib/src/main/java/com/tdder/autocloser/AutoCloser.java) is a class that registers multiple `AutoCloseable` resources and ensures they are closed reliably in reverse order (LIFO) when the scope ends.
+After calling `close()`, you can register new resources again and close them in a later call.
 
 It works particularly well with JUnit 5.11+'s `@AutoClose` annotation, making cleanup in tests more concise than try-with-resources. It can also be used in regular code with the standard `try (AutoCloser closer = …)` pattern.
 
