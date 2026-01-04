@@ -18,6 +18,7 @@ import java.util.Objects;
 public class AutoCloser implements AutoCloseable {
 
     private final Deque<AutoCloseable> resources = new ArrayDeque<>();
+    private final Object lock = new Object();
 
     /**
      * Registers a resource to be closed.
@@ -28,9 +29,11 @@ public class AutoCloser implements AutoCloseable {
      * @return the registered resource
      * @throws NullPointerException  if the resource is null
      */
-    public synchronized <T extends AutoCloseable> T register(final T resource) {
+    public <T extends AutoCloseable> T register(final T resource) {
         Objects.requireNonNull(resource, "resource must not be null");
-        resources.push(resource);
+        synchronized (lock) {
+            resources.push(resource);
+        }
         return resource;
     }
 
@@ -45,7 +48,7 @@ public class AutoCloser implements AutoCloseable {
     @Override
     public void close() throws Exception {
         final Deque<AutoCloseable> toClose;
-        synchronized (this) {
+        synchronized (lock) {
             toClose = new ArrayDeque<>(resources);
             resources.clear();
         }
